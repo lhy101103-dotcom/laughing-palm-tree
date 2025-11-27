@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>温馨弹窗 v3.1编辑你的暖心话语 </title>
+    <title>温馨弹窗 v3.1 </title>
     <style>
         /* --- 基础样式 --- */
         body, html {
@@ -157,6 +157,31 @@
             border: none; border-radius: 6px;
             cursor: pointer; margin-top: 15px;
         }
+
+        /* --- 🟢 新增：响应式适配 (移动端) --- */
+        @media (max-width: 600px) {
+            .controls {
+                padding: 10px; /* 缩小在移动端的内边距 */
+            }
+
+            .menu-panel {
+                width: auto; /* 自动宽度 */
+                left: 15px;  /* 左右边距 */
+                right: 15px;
+                top: 60px; /* 离顶部近一点 */
+                padding: 0 15px 15px 15px; /* 调整内边距 */
+                max-height: calc(100vh - 80px); /* 调整最大高度 */
+            }
+
+            .menu-section h3 {
+                font-size: 1.1em;
+            }
+
+            .control-button {
+                padding: 8px 14px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -263,8 +288,6 @@
         const borderSizeInput = document.getElementById('border-size-input');
         const borderStyleInput = document.getElementById('border-style-input');
         
-        // --- 🔴 已移除 imageSettingsLock 变量 ---
-
         /**
          * 生成元素的总控函数
          */
@@ -304,19 +327,39 @@
         }
         
         /**
-         * 设置卡片位置和动画 (通用逻辑)
+         * 🟢 设置卡片位置和动画 (已修改为动态适配)
          */
         function setupCardPositionAndAnimation(cardElement) {
+            // 1. 先添加到 DOM 才能获取尺寸
+            document.body.appendChild(cardElement); 
+            
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
-            const x = Math.random() * (viewportWidth - 250) + 20; 
-            const y = Math.random() * (viewportHeight - 100) + 20;
+            
+            // 2. 获取卡片自身的实际尺寸
+            const cardWidth = cardElement.offsetWidth;
+            const cardHeight = cardElement.offsetHeight;
+            
+            // 3. 根据卡片尺寸计算随机位置
+            //    增加 10px 的边距，防止贴边
+            const margin = 10;
+            // 确保最大 X/Y 不会小于边距
+            const maxX = Math.max(margin, viewportWidth - cardWidth - margin);
+            const maxY = Math.max(margin, viewportHeight - cardHeight - margin);
+            
+            // 确保 X/Y 坐标在 [margin, maxX] 和 [margin, maxY] 之间
+            const x = (Math.random() * (maxX - margin)) + margin;
+            const y = (Math.random() * (maxY - margin)) + margin;
+
+            // 4. 应用位置和动画
             cardElement.style.left = `${x}px`;
             cardElement.style.top = `${y}px`;
             cardElement.style.animationDuration = `${messageDuration / 1000}s`;
-            document.body.appendChild(cardElement);
+            
             setTimeout(() => {
-                cardElement.remove();
+                if (cardElement) {
+                    cardElement.remove();
+                }
             }, messageDuration);
         }
 
@@ -397,8 +440,6 @@
             imageFeatureUnlocked = true;
             imageSettingsSection.classList.remove('hidden'); // 只需显示功能区
             
-            // 🔴 已移除对 imageSettingsLock 的引用
-
             borderSizeInput.value = imageBorderSize;
             borderStyleInput.value = imageBorderStyle;
             alert('🎉 隐藏功能解锁！您现在可以添加图片了！');
